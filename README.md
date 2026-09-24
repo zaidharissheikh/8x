@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Amazon Clone
+
+A production-quality, pixel-faithful, fully functional e-commerce clone of the Amazon.com shopping experience, built as a university assignment.
+
+## Features
+
+This project covers a complete end-to-end shopping workflow:
+
+- **Authentication:** Secure user login and registration.
+- **Catalog Browsing:** Browse products with a UI/UX closely matching Amazon's layout, spacing, and interactions.
+- **Search:** Functional product search.
+- **Product Details:** Detailed product pages with images, pricing, and descriptions.
+- **Cart Management:** Add to cart, update quantities, and remove items.
+- **Checkout & Payment:** Simulated payment flow (test mode).
+- **Orders:** Order history and tracking.
+- **Reviews:** Product reviews and ratings.
+- **Account Management:** User profile and settings.
+
+## Tech Stack
+
+- **Framework:** Next.js 14+ (App Router)
+- **Language:** TypeScript (Strict Mode)
+- **Styling:** Tailwind CSS + shadcn/ui primitives
+- **Database:** PostgreSQL (hosted on Supabase)
+- **ORM:** Prisma
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+
+- A PostgreSQL database (e.g., Supabase)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd <repo-name>
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. Set up environment variables:
+   Create a `.env` file in the root directory and add the following variables:
+   ```env
+   DATABASE_URL="your-postgresql-database-url"
+   AUTH_SECRET="your-nextauth-secret"
+   NEXTAUTH_URL="http://localhost:3000"
+   ```
+   *(Note: You can generate an `AUTH_SECRET` using `openssl rand -base64 32` or `npx auth secret`)*
 
-To learn more about Next.js, take a look at the following resources:
+4. Sync your database schema and generate the Prisma Client:
+   ```bash
+   npx prisma db push
+   npx prisma generate
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Seed the database with dummy products:
+   ```bash
+   npx prisma db seed
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+6. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+7. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is configured to be deployed easily on Vercel.
+
+1. Push your code to a GitHub repository.
+2. Import the project into your Vercel dashboard.
+3. Add your `DATABASE_URL` and `AUTH_SECRET` environment variables in Vercel.
+4. Deploy! A `postinstall` script in `package.json` ensures the Prisma Client is generated during the Vercel build.
