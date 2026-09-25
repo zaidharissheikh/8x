@@ -16,6 +16,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const ratingValues = values(params.rating).map(Number).filter(Number.isFinite);
   const priceRange = getPriceRange(values(params.price)[0]);
   const isBestSellers = params.sort === 'bestsellers';
+  
   const commonConditions: Prisma.ProductWhereInput[] = [
     ...(query ? [{ OR: [{ title: { contains: query } }, { brand: { contains: query } }, { description: { contains: query } }] }] : []),
   ];
@@ -35,11 +36,32 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       ...(brandValues.length ? [{ OR: brandValues.map((brand) => ({ brand: { contains: brand } })) }] : []),
     ],
   };
+
+  let orderBy: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = { createdAt: 'desc' };
+  
+  switch (params.sort) {
+    case 'price-asc':
+      orderBy = { price: 'asc' };
+      break;
+    case 'price-desc':
+      orderBy = { price: 'desc' };
+      break;
+    case 'newest':
+      orderBy = { createdAt: 'desc' };
+      break;
+    case 'bestsellers':
+      orderBy = [{ ratingCount: 'desc' }, { ratingAvg: 'desc' }, { createdAt: 'desc' }];
+      break;
+    case 'featured':
+    default:
+      orderBy = query ? { title: 'asc' } : { createdAt: 'desc' };
+      break;
+  }
+
   const [products, brandRows] = await Promise.all([
     prisma.product.findMany({
       where: productWhere,
-      orderBy: isBestSellers ? [{ ratingCount: 'desc' }, { ratingAvg: 'desc' }, { createdAt: 'desc' }] : query ? { title: 'asc' } : { createdAt: 'desc' },
-      take: 48,
+      orderBy,
     }),
     prisma.product.findMany({
       where: commonWhere,

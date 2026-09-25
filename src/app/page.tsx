@@ -1,11 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
-import QuadCard from '@/components/home/QuadCard';
-import CarouselRail from '@/components/home/CarouselRail';
-import HistoryRail from '@/components/home/HistoryRail';
-import BrowsingHistory from '@/components/home/BrowsingHistory';
 import { auth } from '@/lib/auth';
+import { Price, Button, Badge } from '@/components/ui';
+import { FadeReveal, ParallaxImage, ScrubRevealText } from '@/components/home/HomeAnimations';
+import RecentlyViewedClient from '@/components/home/RecentlyViewedClient';
+import { ArrowRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const revalidate = 60;
 
@@ -30,82 +31,153 @@ export default async function Home() {
   }) as unknown as HomeProduct[];
 
   const electronics = products.filter((product) => product.category.slug === 'electronics' || product.category.slug === 'computers');
-  const homeProducts = products.filter((product) => product.category.slug === 'home-kitchen');
   const beautyProducts = products.filter((product) => product.category.slug === 'beauty-and-personal-care' || product.category.slug === 'beauty' || product.category.slug === 'skin-care' || product.category.slug === 'fragrances');
-  const fashionProducts = products.filter((product) => product.category.slug.includes('fashion') || product.category.slug === 'tops');
   const deals = products.filter((product) => product.listPrice !== null).slice(0, 12);
-  const fallback = products.slice(0, 4);
-
-  const cardItems = (items: HomeProduct[], options: { badge?: boolean; prices?: boolean } = {}) => (items.length ? items : fallback).slice(0, 4).map((product, index) => ({
-    name: product.title,
-    price: options.prices === false ? undefined : Number(product.price).toFixed(2),
-    image: firstImage(product),
-    link: `/product/${product.slug}`,
-    badge: options.badge && product.listPrice ? { discount: `${Math.round((1 - Number(product.price) / Number(product.listPrice)) * 100)}% off`, text: 'Limited time deal' } : undefined,
-    imageBg: 'bg-white',
-    key: `${product.id}-${index}`,
-  }));
-
-  const dealItems = (deals.length ? deals : products).map((product) => ({
-    id: product.id,
-    title: product.title,
-    badge: product.listPrice ? { discount: `${Math.round((1 - Number(product.price) / Number(product.listPrice)) * 100)}% off`, text: 'Limited time deal' } : undefined,
-    image: firstImage(product),
-    link: `/product/${product.slug}`,
-  }));
-
-  const historyItems = products.slice(12, 22).map((product) => ({
-    id: product.id,
-    title: product.title,
-    rating: Math.max(1, Math.min(5, Math.round(product.ratingAvg))),
-    reviews: product.ratingCount.toLocaleString(),
-    price: Number(product.price).toFixed(2),
-    originalPrice: product.listPrice ? Number(product.listPrice).toFixed(2) : undefined,
-    image: firstImage(product),
-    link: `/product/${product.slug}`,
-  }));
-
-  const categoryHeading = (items: HomeProduct[], fallbackTitle: string) => items[0]?.category.name || fallbackTitle;
 
   return (
-    <div className="min-w-0 flex-1 bg-[#eaeded]">
-      <section className="mx-auto w-full max-w-[1500px] px-3 pt-3 sm:px-4 lg:pt-4">
-        <div className="grid auto-rows-[220px] grid-cols-1 gap-3 sm:auto-rows-[250px] lg:grid-cols-3 lg:auto-rows-[242px] lg:gap-4">
-          <HeroCard href="/s?deal=1" image="https://m.media-amazon.com/images/I/61i3H2ZHJWL._AC_AIweblab1431263,T1_FMavif_SF1282.5,2052_QL54_.jpg?aicid=homepage-single-creative-card" alt="Prime Big Deals" className="lg:row-span-2" title={<><span className="text-base font-normal sm:text-lg">Exclusively for members</span><br /><span className="mt-2 block text-3xl font-bold leading-[1.05] sm:text-[42px]">Prime Big Deals<br />drop Oct 6-7</span></>} button="Join Prime" />
-          <HeroCard href="/s?category=womens-fashion" image="https://m.media-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/I/71ZmNPvKB7L._SR854,1368_.jpg" alt="Fall fashion" title="The fall edit" subtitle="Shop premium brands" />
-          <HeroCard href="/s?k=halloween+candy" image="https://m.media-amazon.com/images/I/716L5NTE3gL._AC_AIweblab1431263,T1_FMavif_SF1282.5,2052_QL54_.jpg?aicid=homepage-single-creative-card" alt="Halloween candy" title={<>Shop Halloween<br />candy picks</>} />
-          <HeroCard href="/s?price=Under%20%2420" image="https://m.media-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/I/61JFkRK2ZHL._SX855_.jpg" alt="Customer loved finds" title={<>Customer-loved<br />finds under $20</>} subtitle="Spend less every day" />
-          <HeroCard href="/s?category=mens-fashion" image="https://m.media-amazon.com/images/W/BW_MEDIAX_AVIF_MEASUREMENT_1306696-T4/images/I/61z+d7nUuAL._SR427,684_.jpg" alt="Sportswear" title={<>Stay active<br />with sportswear</>} subtitle="New styles and more" />
+    <div className="flex flex-col">
+      {/* 1. Cinematic Center Hero */}
+      <section className="relative min-h-[85vh] w-full flex items-center justify-center overflow-hidden bg-black text-white">
+        <ParallaxImage 
+          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop" 
+          alt="Premium Fashion" 
+          className="absolute inset-0 opacity-40 mix-blend-luminosity" 
+        />
+        <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-6xl mx-auto w-full">
+          <Badge variant="outline" className="mb-8 border-white/20 text-white bg-transparent backdrop-blur-md">The Fall Edit</Badge>
+          <ScrubRevealText text="ELEVATE YOUR EVERYDAY." className="font-heading text-[clamp(3rem,8vw,7rem)] font-black leading-[0.9] tracking-tight uppercase" />
+          <FadeReveal delay={0.5} className="mt-12 flex flex-col sm:flex-row gap-4">
+            <Link href="/s?category=womens-fashion">
+              <Button size="lg" className="bg-white text-black hover:bg-concrete border-transparent">
+                Shop Women
+              </Button>
+            </Link>
+            <Link href="/s?category=mens-fashion">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
+                Shop Men
+              </Button>
+            </Link>
+          </FadeReveal>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[1500px] px-3 py-3 sm:px-4">
-        <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {products.slice(0, 8).map((product) => <Link href={`/product/${product.slug}`} key={product.id} className="group flex min-w-[185px] max-w-[185px] shrink-0 flex-col rounded-[4px] border border-gray-200 bg-white p-3 shadow-sm sm:min-w-[205px] sm:max-w-[205px]"><h2 className="line-clamp-2 min-h-9 text-sm font-bold leading-tight text-[#0f1111] group-hover:text-[#c7511f]">{product.title}</h2><span className="mt-1 text-[11px] text-gray-500">Recommended for you</span><div className="relative mt-2 h-[135px]"><Image src={firstImage(product)} alt={product.title} fill sizes="205px" className="object-contain mix-blend-multiply" unoptimized /></div><span className="mt-2 text-sm font-bold text-[#b12704]">${Number(product.price).toFixed(2)}</span></Link>)}
+      {/* 2. Gapless Bento Grid (Deals & Trending) */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-[1800px] mx-auto w-full">
+        <FadeReveal>
+          <div className="flex items-end justify-between mb-12">
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight">Trending Now</h2>
+            <Link href="/s?deal=1" className="hidden md:flex items-center text-sm font-bold uppercase tracking-widest text-graphite hover:text-black transition-colors">
+              View All <ArrowRight size={16} className="ml-2" />
+            </Link>
+          </div>
+        </FadeReveal>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 grid-flow-dense gap-px bg-black/10 border border-black/10">
+          {deals.slice(0, 5).map((product, i) => {
+            const isFeatured = i === 0;
+            return (
+              <FadeReveal key={product.id} delay={i * 0.1} className={cn(
+                "bg-gallery relative group overflow-hidden flex flex-col",
+                isFeatured ? "md:col-span-2 md:row-span-2" : "col-span-1 row-span-1"
+              )}>
+                <Link href={`/product/${product.slug}`} className="flex flex-col h-full flex-1">
+                  <div className={cn("relative w-full bg-concrete/20", isFeatured ? "aspect-square md:aspect-[4/3]" : "aspect-[4/5]")}>
+                    <img 
+                      src={firstImage(product)} 
+                      alt={product.title} 
+                      className="absolute inset-0 h-full w-full object-cover mix-blend-multiply transition-transform duration-1000 ease-out group-hover:scale-105" 
+                    />
+                    {product.listPrice ? (
+                      <Badge variant="accent" className="absolute top-4 left-4 shadow-flat">
+                        Sale
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <div className="p-6 flex flex-col flex-1 justify-between bg-gallery z-10 border-t border-black/5">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-graphite mb-2">{product.category.name}</p>
+                      <h3 className={cn("font-medium line-clamp-2", isFeatured ? "text-2xl font-heading" : "text-base")}>{product.title}</h3>
+                    </div>
+                    <Price 
+                      amount={Number(product.price).toFixed(2)} 
+                      originalAmount={product.listPrice ? Number(product.listPrice).toFixed(2) : undefined} 
+                      className="mt-4"
+                    />
+                  </div>
+                </Link>
+              </FadeReveal>
+            );
+          })}
         </div>
       </section>
 
-      <main className="mx-auto flex w-full max-w-[1500px] min-w-0 flex-col gap-4 px-3 pb-10 sm:px-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <QuadCard title="Selected for you" sponsor="Sponsored" items={cardItems(products)} />
-          <QuadCard title="Continue browsing" sponsor="Sponsored" items={cardItems(products.slice(4, 8), { badge: true, prices: false })} />
-          <QuadCard title={`Keep shopping for ${categoryHeading(electronics, 'electronics').toLowerCase()}`} hasArrow items={cardItems(electronics)} />
-          <QuadCard title={`Popular in ${categoryHeading(homeProducts, 'Home & Kitchen')}`} hasArrow items={cardItems(homeProducts.length ? homeProducts : products.slice(8, 12), { badge: true, prices: false })} />
+      {/* 3. Horizontal Scroll Rail (Beauty & Grooming) */}
+      <section className="py-24 border-y border-black/10 bg-concrete/30 overflow-hidden">
+        <div className="px-4 sm:px-6 lg:px-8 max-w-[1800px] mx-auto w-full">
+          <FadeReveal>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight mb-12">Beauty & Grooming</h2>
+          </FadeReveal>
+          
+          <div className="flex overflow-x-auto gap-px bg-black/10 border border-black/10 snap-x snap-mandatory custom-scrollbar-hide pb-1">
+            {beautyProducts.slice(0, 8).map((product) => (
+              <div key={product.id} className="min-w-[280px] md:min-w-[320px] shrink-0 snap-start bg-gallery group flex flex-col">
+                <Link href={`/product/${product.slug}`} className="flex flex-col h-full flex-1">
+                  <div className="relative aspect-[3/4] bg-concrete/20 overflow-hidden">
+                    <img 
+                      src={firstImage(product)} 
+                      alt={product.title} 
+                      className="absolute inset-0 h-full w-full object-cover mix-blend-multiply transition-transform duration-1000 group-hover:scale-105" 
+                    />
+                  </div>
+                  <div className="p-5 border-t border-black/5 flex-1 flex flex-col justify-between">
+                    <h3 className="font-medium line-clamp-2 text-base mb-4">{product.title}</h3>
+                    <Price amount={Number(product.price).toFixed(2)} />
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <CarouselRail title="Deals you can't miss" items={dealItems} />
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <QuadCard title={`Shop ${categoryHeading(fashionProducts, 'fashion').toLowerCase()}`} hasArrow items={cardItems(fashionProducts)} />
-          <QuadCard title={`Explore ${categoryHeading(beautyProducts, 'beauty').toLowerCase()}`} hasArrow items={cardItems(beautyProducts, { badge: true, prices: false })} />
-          <QuadCard title={`Top picks in ${categoryHeading(homeProducts, 'Home & Kitchen').toLowerCase()}`} hasArrow items={cardItems(homeProducts.slice(4))} />
-          <QuadCard title="More products to explore" hasArrow items={cardItems(products.slice(20, 24).length ? products.slice(20, 24) : products.slice(12, 16))} />
+      {/* 4. Editorial Split (Electronics / Modern Living) */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-[1800px] mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+          <FadeReveal className="order-2 lg:order-1">
+            <div className="grid grid-cols-2 gap-px bg-black/10 border border-black/10">
+              {electronics.slice(0, 4).map(product => (
+                <Link key={product.id} href={`/product/${product.slug}`} className="bg-gallery group block relative overflow-hidden flex flex-col">
+                  <div className="aspect-square bg-concrete/10 relative">
+                    <img src={firstImage(product)} alt={product.title} className="absolute inset-0 w-full h-full object-cover mix-blend-multiply transition-transform duration-700 group-hover:scale-105" />
+                  </div>
+                  <div className="p-4 border-t border-black/5">
+                    <h3 className="text-sm font-medium line-clamp-1">{product.title}</h3>
+                    <p className="text-sm font-bold mt-1">${Number(product.price).toFixed(2)}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </FadeReveal>
+          
+          <FadeReveal className="order-1 lg:order-2 flex flex-col items-start">
+            <Badge variant="secondary" className="mb-6">Curated Tech</Badge>
+            <h2 className="font-heading text-4xl md:text-6xl font-bold leading-[1.1] tracking-tight mb-6">
+              ENGINEERED FOR MODERN LIVING
+            </h2>
+            <p className="text-graphite text-lg mb-10 max-w-md leading-relaxed">
+              Discover our curation of high-performance electronics designed to seamlessly integrate into your space.
+            </p>
+            <Link href="/s?category=electronics">
+              <Button size="lg" className="shadow-flat hover:translate-y-px hover:translate-x-px hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all">
+                Explore Electronics
+              </Button>
+            </Link>
+          </FadeReveal>
         </div>
+      </section>
 
-        {historyItems.length > 0 && <HistoryRail title="Customers who viewed these products also viewed" items={historyItems} />}
-        <BrowsingHistory />
-        {!session && <section className="flex flex-col items-center border-b border-gray-300 bg-white px-4 py-7 text-center"><h2 className="text-lg font-bold">See personalized recommendations</h2><Link href="/auth/signin" className="mt-3 min-w-[230px] rounded-full border border-[#e6a400] bg-[#ffd814] px-6 py-2 text-sm font-bold shadow-sm hover:bg-[#f7ca00]">Sign in</Link><p className="mt-2 text-xs">New customer? <Link href="/auth/register" className="text-[#007185] hover:text-[#c7511f] hover:underline">Start here.</Link></p></section>}
-      </main>
+      {/* 5. Recently Viewed / Action */}
+      <RecentlyViewedClient signedIn={!!session} />
     </div>
   );
 }
@@ -113,8 +185,4 @@ export default async function Home() {
 function firstImage(product: HomeProduct) {
   const images = JSON.parse(product.images) as string[];
   return images[0];
-}
-
-function HeroCard({ href, image, alt, title, subtitle, button, className = '' }: { href: string; image: string; alt: string; title: React.ReactNode; subtitle?: string; button?: string; className?: string }) {
-  return <Link href={href} className={`group relative overflow-hidden rounded-[4px] bg-gray-800 p-5 shadow-sm sm:p-6 ${className}`}><Image src={image} alt={alt} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105" unoptimized /><div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" /><div className="relative z-10 flex h-full flex-col items-start text-white drop-shadow-md">{subtitle && <span className="text-sm font-medium sm:text-base">{subtitle}</span>}<h1 className="mt-1 text-[27px] font-bold leading-[1.05] sm:text-[32px]">{title}</h1>{button && <span className="mt-5 rounded-full bg-[#ffd814] px-4 py-2 text-xs font-bold text-black shadow-sm group-hover:bg-[#f7ca00]">{button}</span>}{button && <span className="mt-auto text-[11px]">Terms apply.</span>}</div></Link>;
 }

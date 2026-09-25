@@ -1,11 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import AddToCartButton from '@/components/cart/AddToCartButton';
 import BuyNowButton from '@/components/cart/BuyNowButton';
 import type { CartItemType } from '@/lib/cart';
 import type { ProductVariantConfig } from '@/lib/productVariants';
+import { Rating, Price } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 
 type ProductBase = Omit<CartItemType, 'quantity'>;
 type Specification = { label: string; value: string };
@@ -14,6 +18,27 @@ export default function ProductConfigurator({ product, variants, title, brand, b
   const [storageId, setStorageId] = useState(variants?.type === 'storage' ? variants.options[0].id : '');
   const [color, setColor] = useState(variants?.type === 'fashion' ? variants.colors[0] : '');
   const [size, setSize] = useState(variants?.type === 'fashion' ? variants.sizes[0] : '');
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    // Stagger center details
+    gsap.fromTo(
+      '.config-detail-item',
+      { opacity: 0, y: 15 },
+      { opacity: 1, y: 0, duration: 0.6, stagger: 0.05, ease: 'power3.out', clearProps: 'all', delay: 0.1 }
+    );
+
+    // Sidebar animation
+    gsap.fromTo(
+      '.config-sidebar',
+      { opacity: 0, x: 20 },
+      { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out', clearProps: 'all', delay: 0.3 }
+    );
+  }, { scope: containerRef });
 
   const selected = useMemo(() => {
     if (variants?.type === 'storage') {
@@ -35,30 +60,157 @@ export default function ProductConfigurator({ product, variants, title, brand, b
   };
 
   return (
-    <>
+    <div ref={containerRef} className="contents">
+      {/* Center Details */}
       <section className="lg:col-start-2 lg:row-start-1">
-        <h1 className="text-2xl font-medium leading-tight text-[#0f1111]">{title}</h1>
-        <Link href={brandHref} className="mt-2 inline-block text-sm text-[#007185] hover:text-[#c7511f] hover:underline">Visit the {brand} store</Link>
-        <div className="mt-2 flex items-center border-b border-gray-300 pb-3 text-sm"><span className="text-[#f08804]">{'★'.repeat(Math.round(ratingAvg))}{'☆'.repeat(Math.max(0, 5 - Math.round(ratingAvg)))}</span><span className="ml-2 text-[#007185]">{ratingCount.toLocaleString()} ratings</span></div>
-        <div className="mt-4 flex items-start text-[#b12704]"><span className="mt-1 text-sm">$</span><span className="text-4xl">{Math.floor(Number(product.price))}</span><span className="mt-1 text-lg">{(Number(product.price) % 1).toFixed(2).slice(2)}</span></div>
-        {listPrice && <div className="mt-1 text-sm text-gray-600">List Price: <span className="line-through">${listPrice.toFixed(2)}</span></div>}
+        <Link href={brandHref} className="config-detail-item text-[10px] font-bold uppercase tracking-widest text-graphite hover:text-black transition-colors mb-4 block">
+          {brand}
+        </Link>
+        <h1 className="config-detail-item font-heading text-3xl md:text-5xl font-medium leading-[1.1] text-black tracking-tight mb-6">
+          {title}
+        </h1>
+        
+        <div className="config-detail-item flex items-center gap-4 mb-8">
+          <Rating value={ratingAvg} />
+          <span className="text-sm font-bold text-graphite">({ratingCount.toLocaleString()} reviews)</span>
+        </div>
 
-        {variants?.type === 'storage' && <div key={storageId} className="variant-selection mt-5"><p className="text-base">Capacity: <b>{variants.options.find((option) => option.id === storageId)?.label}</b></p><div className="mt-2 flex flex-wrap gap-2">{variants.options.map((option) => <button key={option.id} type="button" onClick={() => setStorageId(option.id)} className={`min-w-[96px] rounded-xl border px-3 py-2 text-left text-sm transition-all duration-200 ${storageId === option.id ? 'border-4 border-[#007185] p-[5px]' : 'border-gray-400'}`}><span className="block font-bold">{option.label}</span><span className="mt-0.5 block">${option.price.toFixed(2)}</span></button>)}</div></div>}
-        {variants?.type === 'fashion' && <div key={`${color}-${size}`} className="variant-selection mt-5 space-y-3"><div><p className="text-base">Color: <b>{color}</b></p><div className="mt-2 flex flex-wrap gap-2">{variants.colors.map((option) => <button key={option} type="button" onClick={() => setColor(option)} className={`rounded-md border px-3 py-1.5 text-sm transition-all duration-200 ${color === option ? 'border-2 border-[#007185] font-bold' : 'border-gray-400'}`}>{option}</button>)}</div></div><div><p className="text-base">Size: <b>{size}</b></p><div className="mt-2 flex flex-wrap gap-2">{variants.sizes.map((option) => <button key={option} type="button" onClick={() => setSize(option)} className={`min-w-12 rounded-md border px-3 py-1.5 text-sm transition-all duration-200 ${size === option ? 'border-2 border-[#007185] font-bold' : 'border-gray-400'}`}>{option}<span className="mt-0.5 block text-xs font-normal">${variants.sizePrices[option].toFixed(2)}</span></button>)}</div></div></div>}
+        <div className="config-detail-item border-t border-black/10 pt-8 pb-8">
+          {variants?.type === 'storage' && (
+            <div key={storageId} className="space-y-4">
+              <p className="text-sm font-bold uppercase tracking-widest">
+                Capacity: <span className="text-graphite">{variants.options.find((option) => option.id === storageId)?.label}</span>
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {variants.options.map((option) => (
+                  <button 
+                    key={option.id} 
+                    type="button" 
+                    onClick={() => setStorageId(option.id)} 
+                    className={cn(
+                      "min-w-[100px] border px-4 py-3 text-left transition-all duration-200 rounded-none",
+                      storageId === option.id ? "border-black bg-black text-white shadow-flat" : "border-black/20 text-black hover:border-black/50"
+                    )}
+                  >
+                    <span className="block text-sm font-bold">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-        <div className="mt-5 border-y border-gray-200 py-3 text-sm"><h2 className="text-base font-bold">Product details</h2>{specifications.map((item) => <div key={item.label} className="flex gap-3 border-b border-gray-100 py-2 last:border-0"><span className="w-36 shrink-0 font-bold">{item.label}</span><span className="text-gray-700">{item.value}</span></div>)}</div>
-        <p className="mt-4 text-sm leading-6 text-gray-700">{description}</p>
-        <h2 className="mt-5 text-lg font-bold">About this item</h2>
-        <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-5 text-gray-800">{bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>
+          {variants?.type === 'fashion' && (
+            <div key={`${color}-${size}`} className="space-y-8">
+              <div className="space-y-4">
+                <p className="text-sm font-bold uppercase tracking-widest">
+                  Color: <span className="text-graphite">{color}</span>
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {variants.colors.map((option) => (
+                    <button 
+                      key={option} 
+                      type="button" 
+                      onClick={() => setColor(option)} 
+                      className={cn(
+                        "px-6 py-2.5 text-sm font-medium transition-all border rounded-none",
+                        color === option ? "border-black bg-black text-white shadow-flat" : "border-black/20 text-black hover:border-black/50"
+                      )}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <p className="text-sm font-bold uppercase tracking-widest">
+                  Size: <span className="text-graphite">{size}</span>
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {variants.sizes.map((option) => (
+                    <button 
+                      key={option} 
+                      type="button" 
+                      onClick={() => setSize(option)} 
+                      className={cn(
+                        "min-w-[4rem] px-3 py-2 text-center transition-all border flex flex-col items-center justify-center rounded-none",
+                        size === option ? "border-black bg-black text-white shadow-flat" : "border-black/20 text-black hover:border-black/50"
+                      )}
+                    >
+                      <span className="font-bold text-sm">{option}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-black/10 py-10 space-y-8">
+          <p className="config-detail-item text-base leading-relaxed text-black/80">{description}</p>
+          
+          <div className="config-detail-item space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-4">Highlights</h2>
+            <ul className="space-y-3">
+              {bullets.map((bullet, i) => (
+                <li key={i} className="flex gap-4 items-start text-sm text-black/80">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-black rotate-45" />
+                  <span className="leading-relaxed">{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div className="config-detail-item space-y-4">
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-4">Specifications</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {specifications.map((item) => (
+                <div key={item.label} className="flex flex-col gap-1 border border-black/10 p-4 bg-concrete/20">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-graphite">{item.label}</span>
+                  <span className="text-sm font-medium">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
-      <aside className="h-max rounded-lg border border-gray-300 p-3 shadow-sm lg:col-start-3 lg:row-span-2 lg:row-start-1">
-        <div key={selected.id} className="variant-price text-xl text-[#b12704]">${selected.price.toFixed(2)}</div>
-        <p className="mt-2 text-sm">FREE delivery <b>Tomorrow</b></p>
-        <p className={`mt-3 text-base ${product.stock > 0 ? 'text-[#007600]' : 'text-[#b12704]'}`}>{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</p>
-        {product.stock > 0 && <><AddToCartButton product={cartProduct} /><BuyNowButton product={cartProduct} /></>}
-        <div className="mt-4 space-y-2 border-t border-gray-200 pt-3 text-xs text-gray-600"><div className="flex justify-between"><span>Ships from</span><b>Amazon</b></div><div className="flex justify-between"><span>Sold by</span><b>Amazon</b></div><div className="flex justify-between"><span>Returns</span><span className="text-[#007185]">30-day returns</span></div></div>
+      {/* Action Sidebar */}
+      <aside className="lg:col-start-3 lg:row-span-2 lg:row-start-1">
+        <div className="config-sidebar sticky top-24 bg-white border border-black shadow-flat p-6 lg:p-8">
+          <div className="mb-8">
+            <Price amount={selected.price.toFixed(2)} originalAmount={listPrice ? listPrice.toFixed(2) : undefined} className="text-4xl font-heading" />
+            <p className="mt-4 text-xs font-bold uppercase tracking-widest text-graphite">FREE delivery <span className="text-black">Tomorrow</span></p>
+            <p className={cn(
+              "mt-2 text-sm font-bold uppercase tracking-widest",
+              product.stock > 0 ? "text-black" : "text-oxblood"
+            )}>
+              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            </p>
+          </div>
+          
+          {product.stock > 0 && (
+            <div className="flex flex-col gap-3">
+              <AddToCartButton product={cartProduct} />
+              <BuyNowButton product={cartProduct} />
+            </div>
+          )}
+          
+          <div className="mt-8 pt-6 border-t border-black/10 space-y-4 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-graphite font-medium">Ships from</span>
+              <span className="font-bold">The Gallery</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-graphite font-medium">Sold by</span>
+              <span className="font-bold">The Gallery</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-graphite font-medium">Returns</span>
+              <span className="font-bold underline decoration-black/20 underline-offset-4 cursor-pointer hover:decoration-black transition-colors">30-day returns</span>
+            </div>
+          </div>
+        </div>
       </aside>
-    </>
+    </div>
   );
 }

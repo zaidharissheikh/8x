@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCartStore, CartItemType } from '@/lib/cart';
+import { Button } from '@/components/ui';
 
 export default function BuyNowButton({ product }: { product: Omit<CartItemType, 'quantity'> }) {
   const addItem = useCartStore((state) => state.addItem);
@@ -12,5 +13,15 @@ export default function BuyNowButton({ product }: { product: Omit<CartItemType, 
     router.push('/checkout');
   }
 
-  return <button type="button" onClick={buyNow} className="mt-2 w-full rounded-full border border-[#fa8900] bg-[#ffa41c] py-1.5 text-sm shadow-sm hover:bg-[#fa8900]">Buy now</button>;
+  return (
+    <Button 
+      type="button" 
+      onClick={buyNow} 
+      variant="outline"
+      size="lg"
+      className="w-full mt-3 text-base border-black text-black bg-transparent hover:bg-black hover:text-white"
+    >
+      Buy Now
+    </Button>
+  );
 }

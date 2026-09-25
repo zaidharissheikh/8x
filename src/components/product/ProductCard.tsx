@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import QuickAddToCartButton from './QuickAddToCartButton';
+import { Badge, Price, Rating } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 export type CatalogProduct = {
   id: string;
@@ -18,32 +20,153 @@ export type CatalogProduct = {
   isBestSeller?: boolean;
 };
 
-export default function ProductCard({ product, showAddToCart = false, layout = 'list' }: { product: CatalogProduct; showAddToCart?: boolean; layout?: 'list' | 'related' }) {
+export default function ProductCard({ product, showAddToCart = false, layout = 'list' }: { product: CatalogProduct; showAddToCart?: boolean; layout?: 'list' | 'related' | 'grid' }) {
   if (layout === 'related') return <RelatedProductCard product={product} />;
-
-  const priceParts = product.price.toFixed(2).split('.');
+  
+  if (layout === 'grid') {
+    return (
+      <article className="group flex flex-col bg-gallery relative border-b border-r border-black/10 p-6 sm:p-8 hover:bg-white transition-colors">
+        {product.isBestSeller && (
+          <Badge variant="default" className="absolute top-6 left-6 z-10 shadow-flat">
+            Best Seller
+          </Badge>
+        )}
+        <Link href={`/product/${product.slug}`} className="block relative aspect-[4/5] w-full bg-concrete/20 overflow-hidden border border-black/5 mb-6">
+          <img 
+            src={product.images[0]} 
+            alt={product.title} 
+            className="absolute inset-0 h-full w-full object-cover mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-105" 
+          />
+        </Link>
+        <div className="flex flex-col flex-1 justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-graphite mb-2">
+              {product.brand || 'The Gallery'}
+            </p>
+            <Link href={`/product/${product.slug}`} className="inline-block mb-3">
+              <h2 className="text-base font-medium leading-snug text-black group-hover:text-graphite transition-colors line-clamp-2">
+                {product.title}
+              </h2>
+            </Link>
+            <div className="flex items-center gap-2 mb-6">
+              <Rating value={product.ratingAvg} />
+              <span className="text-[10px] font-bold text-graphite">({formatCount(product.ratingCount)})</span>
+            </div>
+          </div>
+          <div className="flex items-end justify-between gap-4">
+            <Price 
+              amount={product.price.toFixed(2)} 
+              originalAmount={product.listPrice ? product.listPrice.toFixed(2) : undefined} 
+            />
+            {showAddToCart && (product.stock === undefined || product.stock > 0) && (
+              <div className="w-[120px]">
+                <QuickAddToCartButton 
+                  product={{ id: product.id, slug: product.slug, title: product.title, price: product.price, image: product.images[0], stock: product.stock || 1 }} 
+                  wide 
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  }
 
   return (
-    <article className="flex flex-col gap-5 border-b border-gray-200 bg-white p-4 sm:flex-row lg:min-h-[350px]">
-      <Link href={`/product/${product.slug}`} className="group block shrink-0">
-        <div className="relative h-[260px] w-full bg-[#f7f7f7] sm:h-[330px] sm:w-[300px]">{product.isBestSeller && <span className="absolute left-0 top-0 z-10 rounded-br bg-[#c45500] px-2 py-1 text-xs font-bold text-white">Best Seller</span>}<Image src={product.images[0]} alt={product.title} fill sizes="300px" className="object-contain transition group-hover:scale-105" unoptimized /></div>
+    <article className="group flex flex-col md:flex-row gap-8 py-10 border-b border-black/10 bg-white first:pt-4 px-4 md:px-0 hover:bg-concrete/5 transition-colors">
+      {/* Image Column */}
+      <Link href={`/product/${product.slug}`} className="block shrink-0 w-full md:w-[320px]">
+        <div className="relative aspect-[4/5] w-full bg-concrete/20 overflow-hidden border border-black/5">
+          {product.isBestSeller && (
+            <Badge variant="default" className="absolute top-4 left-4 z-10 shadow-flat">
+              Best Seller
+            </Badge>
+          )}
+          <img 
+            src={product.images[0]} 
+            alt={product.title} 
+            className="absolute inset-0 h-full w-full object-cover mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-105" 
+          />
+        </div>
       </Link>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="text-xs text-gray-600">Sponsored</span>
-        <Link href={`/product/${product.slug}`} className="mt-1 text-xl leading-7 text-[#111] hover:text-[#c7511f] hover:underline">{product.title}</Link>
-        <div className="mt-2 flex items-center text-sm"><span>{product.ratingAvg.toFixed(1)}</span><span className="ml-1 text-[#f08804]">{'★'.repeat(Math.round(product.ratingAvg))}{'☆'.repeat(Math.max(0, 5 - Math.round(product.ratingAvg)))}</span><span className="ml-1 text-[#007185]">({formatCount(product.ratingCount)})</span></div>
-        <p className="mt-2 text-base text-gray-700">{product.ratingCount > 5000 ? '10K+' : '800+'} bought in past month</p>
-        {product.description && <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-5 text-gray-700">{product.description}</p>}
-        <div className="mt-3 grid max-w-3xl grid-cols-2 gap-x-10 gap-y-2 text-sm md:grid-cols-3"><div><span className="text-gray-600">Brand</span><br /><b>{product.brand || 'Amazon'}</b></div><div><span className="text-gray-600">Availability</span><br /><b>{product.stock && product.stock > 0 ? 'In Stock' : 'Out of Stock'}</b></div><div><span className="text-gray-600">Delivery</span><br /><b>FREE delivery</b></div></div>
-        <div className="mt-auto pt-4"><div className="flex items-start text-[#111]"><span className="mt-1 text-sm">$</span><span className="text-3xl">{priceParts[0]}</span><sup className="mt-1 text-sm">{priceParts[1]}</sup>{product.listPrice && <span className="ml-3 mt-2 text-sm text-gray-500">Typical price: <span className="line-through">${product.listPrice.toFixed(2)}</span></span>}</div>{product.isPrime && <div className="mt-1 text-sm font-bold italic text-[#147eb3]">✓prime</div>}<p className="mt-1 text-sm">FREE delivery <b>Tomorrow</b></p>{product.stock !== undefined && product.stock < 15 && product.stock > 0 && <p className="mt-1 text-sm text-[#c40000]">Only {product.stock} left in stock - order soon.</p>}{showAddToCart && (product.stock === undefined || product.stock > 0) && <div className="w-[304px] max-w-full"><QuickAddToCartButton product={{ id: product.id, slug: product.slug, title: product.title, price: product.price, image: product.images[0], stock: product.stock || 1 }} wide /></div>}</div>
+      
+      {/* Details Column */}
+      <div className="flex min-w-0 flex-1 flex-col justify-center">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-graphite mb-3">
+          {product.brand || 'The Gallery'}
+        </p>
+        
+        <Link href={`/product/${product.slug}`} className="inline-block">
+          <h2 className="text-xl md:text-2xl font-medium leading-tight text-black group-hover:text-graphite transition-colors line-clamp-2">
+            {product.title}
+          </h2>
+        </Link>
+        
+        <div className="mt-4 flex items-center gap-3">
+          <Rating value={product.ratingAvg} />
+          <span className="text-xs font-bold text-graphite">({formatCount(product.ratingCount)})</span>
+        </div>
+        
+        {product.description && (
+          <p className="mt-6 line-clamp-2 text-sm text-graphite leading-relaxed max-w-2xl">
+            {product.description}
+          </p>
+        )}
+        
+        <div className="mt-auto pt-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <Price 
+              amount={product.price.toFixed(2)} 
+              originalAmount={product.listPrice ? product.listPrice.toFixed(2) : undefined} 
+              className="text-2xl"
+            />
+            {product.stock !== undefined && product.stock > 0 && product.stock < 15 && (
+              <p className="mt-2 text-[10px] font-bold text-oxblood uppercase tracking-widest">
+                Only {product.stock} left
+              </p>
+            )}
+            {product.stock === 0 && (
+              <p className="mt-2 text-[10px] font-bold text-graphite uppercase tracking-widest">
+                Out of Stock
+              </p>
+            )}
+          </div>
+          
+          {showAddToCart && (product.stock === undefined || product.stock > 0) && (
+            <div className="w-full md:w-auto min-w-[200px]">
+              <QuickAddToCartButton 
+                product={{ id: product.id, slug: product.slug, title: product.title, price: product.price, image: product.images[0], stock: product.stock || 1 }} 
+                wide 
+              />
+            </div>
+          )}
+        </div>
       </div>
     </article>
   );
 }
 
 function RelatedProductCard({ product }: { product: CatalogProduct }) {
-  const priceParts = product.price.toFixed(2).split('.');
-  return <article className="flex w-[225px] shrink-0 flex-col bg-white"><Link href={`/product/${product.slug}`} className="group"><div className="relative h-[225px] w-full rounded-sm bg-[#f7f7f7]"><Image src={product.images[0]} alt={product.title} fill sizes="225px" className="object-contain transition group-hover:scale-105" unoptimized /></div><h2 className="mt-4 line-clamp-1 text-base text-[#007185] group-hover:text-[#c7511f] group-hover:underline">{product.title}</h2></Link><div className="mt-3 flex items-center text-sm text-[#f08804]"><span>{product.ratingAvg.toFixed(1)}</span><span className="ml-1">{'★'.repeat(Math.round(product.ratingAvg))}{'☆'.repeat(Math.max(0, 5 - Math.round(product.ratingAvg)))}</span><span className="ml-1 text-[#007185]">({formatCount(product.ratingCount)})</span></div><div className="mt-2 flex items-start text-[#111]"><span className="mt-1 text-sm">$</span><span className="text-2xl">{priceParts[0]}</span><sup className="mt-1 text-sm">{priceParts[1]}</sup></div></article>;
+  return (
+    <article className="flex w-[240px] shrink-0 flex-col group">
+      <Link href={`/product/${product.slug}`} className="flex flex-col h-full">
+        <div className="relative aspect-[3/4] w-full bg-concrete/20 overflow-hidden border border-black/5">
+          <img 
+            src={product.images[0]} 
+            alt={product.title} 
+            className="absolute inset-0 h-full w-full object-cover mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-105" 
+          />
+        </div>
+        <div className="pt-4 flex flex-col flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-graphite mb-2 line-clamp-1">{product.brand || 'The Gallery'}</p>
+          <h2 className="line-clamp-2 text-sm font-medium text-black group-hover:text-graphite transition-colors">{product.title}</h2>
+          <div className="mt-auto pt-4">
+            <Price amount={product.price.toFixed(2)} originalAmount={product.listPrice ? product.listPrice.toFixed(2) : undefined} />
+          </div>
+        </div>
+      </Link>
+    </article>
+  );
 }
 
 function formatCount(value: number) {

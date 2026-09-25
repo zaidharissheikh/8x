@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui';
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -35,14 +36,35 @@ export default function RegisterForm() {
     router.push('/auth/signin?created=1');
   }
 
+  const inputClasses = "mt-2 w-full border border-black/20 px-4 py-3 text-sm font-medium normal-case tracking-normal outline-none transition-all rounded-none focus:border-black focus:ring-1 focus:ring-black hover:border-black/50";
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
-      {error && <div className="border border-[#c40000] bg-red-50 p-2 text-sm text-[#c40000]"><span className="font-bold">There was a problem</span><p>{error}</p></div>}
-      <label className="flex flex-col text-sm font-bold">Your name<input required value={name} onChange={(event) => setName(event.target.value)} className="mt-1 rounded-sm border border-gray-400 px-3 py-1 font-normal outline-none focus:border-[#e77600]" placeholder="First and last name" /></label>
-      <label className="flex flex-col text-sm font-bold">Email<input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 rounded-sm border border-gray-400 px-3 py-1 font-normal outline-none focus:border-[#e77600]" /></label>
-      <label className="flex flex-col text-sm font-bold">Password<input required minLength={6} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 6 characters" className="mt-1 rounded-sm border border-gray-400 px-3 py-1 font-normal outline-none focus:border-[#e77600]" /></label>
-      <label className="flex flex-col text-sm font-bold">Re-enter password<input required minLength={6} type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} className="mt-1 rounded-sm border border-gray-400 px-3 py-1 font-normal outline-none focus:border-[#e77600]" /></label>
-      <button type="submit" disabled={loading} className="w-full rounded-md border border-[#fcd200] bg-[#ffd814] py-1.5 text-sm shadow-sm hover:bg-[#f7ca00] disabled:opacity-50">{loading ? 'Creating account...' : 'Create your account'}</button>
+    <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
+      {error && <div className="border border-oxblood bg-oxblood/5 p-4 text-sm font-bold text-oxblood"><p>{error}</p></div>}
+      
+      <label className="flex flex-col text-[10px] font-bold uppercase tracking-widest text-black">
+        Your Name
+        <input required value={name} onChange={(event) => setName(event.target.value)} className={inputClasses} placeholder="First and last name" />
+      </label>
+      
+      <label className="flex flex-col text-[10px] font-bold uppercase tracking-widest text-black">
+        Email Address
+        <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} className={inputClasses} />
+      </label>
+      
+      <label className="flex flex-col text-[10px] font-bold uppercase tracking-widest text-black">
+        Password
+        <input required minLength={6} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 6 characters" className={inputClasses} />
+      </label>
+      
+      <label className="flex flex-col text-[10px] font-bold uppercase tracking-widest text-black">
+        Re-enter Password
+        <input required minLength={6} type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} className={inputClasses} />
+      </label>
+      
+      <Button type="submit" size="lg" disabled={loading} className="mt-4">
+        {loading ? 'Processing...' : 'Create Account'}
+      </Button>
     </form>
   );
 }

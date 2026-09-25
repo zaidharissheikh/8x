@@ -7,6 +7,8 @@ import { getProductVariantConfig } from '@/lib/productVariants';
 import ProductCard from '@/components/product/ProductCard';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductConfigurator from '@/components/product/ProductConfigurator';
+import HistoryTracker from '@/components/product/HistoryTracker';
+import { Rating } from '@/components/ui';
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -32,18 +34,121 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const ratingDistribution = getRatingDistribution(product.ratingAvg);
 
   return (
-    <div className="min-h-screen bg-white px-4 pb-12 pt-4">
-      <div className="mx-auto max-w-[1500px]">
-        <nav className="mb-4 text-xs text-[#007185]"><Link href="/">Home</Link><span className="mx-2 text-gray-400">›</span><Link href={`/category/${product.category.slug}`}>{product.category.name}</Link><span className="mx-2 text-gray-400">›</span><span className="text-gray-600">{product.title}</span></nav>
-        <div className="grid items-start gap-8 lg:grid-cols-[minmax(360px,5fr)_minmax(330px,4fr)_310px]">
+    <div className="min-h-screen bg-gallery px-4 pb-12 pt-8 border-t border-black/10">
+      <HistoryTracker product={{ id: product.id, slug: product.slug, title: product.title, image: images[0] }} />
+      <div className="mx-auto max-w-[1600px]">
+        {/* Breadcrumb */}
+        <nav className="mb-10 text-[10px] font-bold uppercase tracking-widest flex flex-wrap items-center gap-2">
+          <Link href="/" className="text-graphite hover:text-black transition-colors">Home</Link>
+          <span className="text-black/20">/</span>
+          <Link href={`/category/${product.category.slug}`} className="text-graphite hover:text-black transition-colors">{product.category.name}</Link>
+          <span className="text-black/20">/</span>
+          <span className="text-black truncate max-w-xs">{product.title}</span>
+        </nav>
+
+        {/* Product Grid */}
+        <div className="grid items-start gap-12 lg:gap-16 lg:grid-cols-[minmax(400px,5fr)_minmax(330px,4fr)_320px]">
           <ProductGallery images={images} title={product.title} />
 
-          <ProductConfigurator product={productForCart} variants={variants} title={product.title} brand={product.brand} brandHref={`/s?brand=${encodeURIComponent(product.brand)}`} ratingAvg={product.ratingAvg} ratingCount={product.ratingCount} listPrice={product.listPrice ? Number(product.listPrice) : null} description={product.description} bullets={bullets} specifications={specifications} />
+          <ProductConfigurator 
+            product={productForCart} 
+            variants={variants} 
+            title={product.title} 
+            brand={product.brand} 
+            brandHref={`/s?brand=${encodeURIComponent(product.brand)}`} 
+            ratingAvg={product.ratingAvg} 
+            ratingCount={product.ratingCount} 
+            listPrice={product.listPrice ? Number(product.listPrice) : null} 
+            description={product.description} 
+            bullets={bullets} 
+            specifications={specifications} 
+          />
         </div>
 
-        {related.length > 0 && <section className="mt-12 border-t border-gray-300 pt-6"><h2 className="text-2xl font-bold">Products related to this item</h2><div className="custom-scrollbar-hide mt-5 flex gap-5 overflow-x-auto pb-2">{related.map((item) => <ProductCard key={item.id} layout="related" product={{ id: item.id, slug: item.slug, title: item.title, price: Number(item.price), listPrice: item.listPrice ? Number(item.listPrice) : null, images: getProductImages(item.images), ratingAvg: item.ratingAvg, ratingCount: item.ratingCount, isPrime: item.isPrime, stock: item.stock }} />)}</div></section>}
+        {/* Related Products */}
+        {related.length > 0 && (
+          <section className="mt-24 border-t border-black/10 pt-16">
+            <h2 className="font-heading text-3xl font-bold tracking-tight mb-8">Related Items</h2>
+            <div className="custom-scrollbar-hide flex gap-8 overflow-x-auto pb-4">
+              {related.map((item) => (
+                <ProductCard 
+                  key={item.id} 
+                  layout="related" 
+                  product={{ 
+                    id: item.id, 
+                    slug: item.slug, 
+                    title: item.title, 
+                    price: Number(item.price), 
+                    listPrice: item.listPrice ? Number(item.listPrice) : null, 
+                    images: getProductImages(item.images), 
+                    ratingAvg: item.ratingAvg, 
+                    ratingCount: item.ratingCount, 
+                    isPrime: item.isPrime, 
+                    stock: item.stock 
+                  }} 
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section className="mt-12 border-t border-gray-300 pt-6"><h2 className="text-2xl font-bold">Customer reviews</h2><div className="mt-5 grid gap-10 lg:grid-cols-[330px_1fr]"><div><div className="text-3xl font-medium">{product.ratingAvg.toFixed(1)} <span className="text-[#f08804]">★</span> <span className="text-base font-normal text-gray-800">out of 5</span></div><p className="mt-1 text-sm text-gray-600">{product.ratingCount.toLocaleString()} global ratings</p><div className="mt-5 space-y-2">{ratingDistribution.map((rating) => <div key={rating.stars} className="grid grid-cols-[56px_1fr_38px] items-center gap-2 text-sm"><span className="text-[#007185]">{rating.stars} star</span><div className="h-5 overflow-hidden rounded border border-gray-300 bg-[#eef0f0]"><div className="h-full bg-[#f0a400]" style={{ width: `${rating.percent}%` }} /></div><span className="text-[#007185]">{rating.percent}%</span></div>)}</div></div><div><h3 className="text-2xl font-bold">Top reviews from the United States</h3><div className="mt-5 space-y-6">{product.reviews.length ? product.reviews.map((review) => <article key={review.id} className="border-b border-gray-200 pb-5"><div className="flex items-center gap-2"><UserCircle size={31} strokeWidth={1.5} className="text-gray-500" /><span className="text-sm font-medium">{review.user.name || 'Amazon Customer'}</span></div><div className="mt-3 text-[#f08804]">{review.rating.toFixed(1)} {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)} <span className="ml-2 text-sm font-bold text-[#111]">{review.title}</span></div><p className="mt-2 text-sm text-gray-600">Reviewed in the United States on {review.createdAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p><p className="mt-2 text-sm font-bold text-[#c45500]">Verified Purchase</p><p className="mt-2 text-sm leading-6 text-gray-700">{review.body}</p></article>) : <p className="text-sm text-gray-600">There are no reviews for this product yet.</p>}</div></div></div></section>
+        {/* Reviews */}
+        <section className="mt-24 border-t border-black/10 pt-16">
+          <h2 className="font-heading text-3xl font-bold tracking-tight mb-12">Customer Reviews</h2>
+          <div className="grid gap-16 lg:grid-cols-[360px_1fr] items-start">
+            <div className="sticky top-24">
+              <div className="flex items-end gap-4 mb-4">
+                <span className="font-heading text-6xl font-bold leading-none tracking-tighter">{product.ratingAvg.toFixed(1)}</span>
+                <div className="pb-1">
+                  <Rating value={product.ratingAvg} />
+                  <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-graphite">
+                    {product.ratingCount.toLocaleString()} ratings
+                  </p>
+                </div>
+              </div>
+              <div className="mt-12 space-y-4">
+                {ratingDistribution.map((rating) => (
+                  <div key={rating.stars} className="grid grid-cols-[48px_1fr_40px] items-center gap-4 text-sm font-bold">
+                    <span className="text-graphite">{rating.stars} Star</span>
+                    <div className="h-1.5 w-full bg-concrete/50 overflow-hidden">
+                      <div className="h-full bg-black" style={{ width: `${rating.percent}%` }} />
+                    </div>
+                    <span className="text-graphite text-right">{rating.percent}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-widest mb-8 border-b border-black/10 pb-4">Selected Reviews</h3>
+              <div className="space-y-12">
+                {product.reviews.length ? product.reviews.map((review) => (
+                  <article key={review.id} className="border-b border-black/10 pb-12 last:border-0">
+                    <div className="flex items-center gap-4 mb-5">
+                      <div className="h-10 w-10 bg-concrete flex items-center justify-center font-bold text-graphite shrink-0">
+                        {review.user.name?.charAt(0) || 'U'}
+                      </div>
+                      <div>
+                        <span className="text-sm font-bold block">{review.user.name || 'Anonymous User'}</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-graphite">
+                          {review.createdAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                      <Rating value={review.rating} />
+                      <span className="text-sm font-bold text-black">{review.title}</span>
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-oxblood mb-4">Verified Purchase</p>
+                    <p className="text-sm leading-relaxed text-black/80">{review.body}</p>
+                  </article>
+                )) : (
+                  <p className="text-sm text-graphite font-bold uppercase tracking-widest">No reviews yet.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -54,7 +159,7 @@ function getProductSpecifications(id: string, categorySlug: string, brand: strin
   const fashion = categorySlug.includes('fashion');
   return [
     { label: 'Brand', value: brand },
-    { label: 'SKU', value: `AMZ-${id.slice(-8).toUpperCase()}` },
+    { label: 'SKU', value: `GLRY-${id.slice(-8).toUpperCase()}` },
     { label: 'Item weight', value: `${(fashion ? 0.4 + (seed % 20) / 10 : 1.2 + (seed % 70) / 10).toFixed(1)} lb` },
     { label: 'Dimensions', value: fashion ? '12 x 8 x 2 inches' : `${8 + seed % 8} x ${6 + seed % 6} x ${2 + seed % 4} inches` },
   ];

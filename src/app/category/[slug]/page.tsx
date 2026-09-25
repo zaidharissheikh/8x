@@ -10,7 +10,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const { slug } = await params;
   const category = await prisma.category.findUnique({ where: { slug } });
   if (!category) return notFound();
-  const products = await prisma.product.findMany({ where: { categoryId: category.id }, orderBy: { createdAt: 'desc' }, take: 48 });
+  const products = await prisma.product.findMany({ where: { categoryId: category.id }, orderBy: { createdAt: 'desc' } });
   return <CatalogPage title={category.name} subtitle={`Shop the best of ${category.name.toLowerCase()}.`} filters={{ category: slug }} products={products.map((product, index) => toCatalogProduct(product, index))} />;
 }
 

@@ -4,6 +4,7 @@ import { useCartStore, CartItemType } from '@/lib/cart';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QuantityStepper from './QuantityStepper';
+import { Button } from '@/components/ui';
 
 export default function AddToCartButton({ product }: { product: Omit<CartItemType, 'quantity'> }) {
   const [qty, setQty] = useState(1);
@@ -11,22 +12,23 @@ export default function AddToCartButton({ product }: { product: Omit<CartItemTyp
   const router = useRouter();
 
   const handleAdd = () => {
-    addItem({
-      ...product,
-      quantity: qty
-    });
+    addItem({ ...product, quantity: qty });
     router.push('/cart');
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-4 flex items-center gap-2 text-sm"><span>Qty:</span><QuantityStepper value={qty} max={Math.min(10, product.stock)} onChange={setQty} /></div>
-      <button 
+    <div className="flex flex-col gap-4 w-full">
+      <div className="flex items-center gap-4 text-sm font-bold uppercase tracking-widest text-graphite mb-2">
+        <span>Qty</span>
+        <QuantityStepper value={qty} max={Math.min(10, product.stock)} onChange={setQty} />
+      </div>
+      <Button 
         onClick={handleAdd}
-        className="w-full bg-[#FFD814] hover:bg-[#F7CA00] rounded-full py-1.5 text-sm shadow-sm border border-[#FCD200]"
+        size="lg"
+        className="w-full text-base"
       >
         Add to Cart
-      </button>
+      </Button>
     </div>
   );
 }

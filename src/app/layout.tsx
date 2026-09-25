@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SiteChrome from "@/components/layout/SiteChrome";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "AmazonClone",
-  description: "An Amazon.com clone built with Next.js",
+  title: "Premium E-Commerce | The Engineered Gallery",
+  description: "A highly polished, editorial e-commerce experience.",
 };
 
 export default function RootLayout({
@@ -18,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.className} h-full antialiased`}>
-      <body id="top" className="min-h-full flex flex-col bg-[#EAEDED] text-black">
+    <html lang="en" className="h-full antialiased">
+      <body id="top" className="min-h-full flex flex-col bg-gallery text-black font-satoshi overflow-x-hidden w-full max-w-full">
         <SiteChrome header={<Header />} footer={<Footer />}>{children}</SiteChrome>
       </body>
     </html>

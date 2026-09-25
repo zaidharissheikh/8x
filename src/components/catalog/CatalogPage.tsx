@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import ProductCard, { CatalogProduct } from '@/components/product/ProductCard';
 import FilterCheckbox from './FilterCheckbox';
+import SortSelect from './SortSelect';
+import { Button } from '@/components/ui';
 
 export type CatalogFilters = {
   query?: string;
@@ -24,24 +26,79 @@ export default async function CatalogPage({ title, subtitle, products, filters =
   const selectedPrices = values(filters.price);
 
   return (
-    <div className="min-h-screen bg-white px-3 py-3 sm:px-4">
-      <div className="mx-auto max-w-[1400px]">
-        <div className="flex items-center justify-between border-b border-gray-300 pb-2 text-sm"><span>1-{products.length} of more than 900,000 results</span><span className="rounded-md border border-gray-400 bg-white px-3 py-1.5">Sort by: Featured⌄</span></div>
+    <div className="min-h-screen bg-gallery px-4 py-8 lg:py-12 border-t border-black/10">
+      <div className="mx-auto max-w-[1800px]">
+        {/* Header Bar */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-black/10 pb-6 mb-10 gap-6">
+          <div>
+            <h1 className="font-heading text-3xl md:text-5xl font-bold tracking-tight mb-2">
+              {title}
+            </h1>
+            {subtitle && <p className="text-sm text-graphite max-w-2xl">{subtitle}</p>}
+          </div>
+          <div className="flex items-center gap-4 text-sm font-medium shrink-0">
+            <span className="text-graphite">Showing {products.length} results</span>
+            <form action="/s" method="get" className="w-48">
+              {filters.query && <input type="hidden" name="k" value={filters.query} />}
+              {filters.category && <input type="hidden" name="category" value={filters.category} />}
+            </form>
+          </div>
+        </div>
+
         <form action="/s" method="get">
           {filters.query && <input type="hidden" name="k" value={filters.query} />}
-          {filters.sort && <input type="hidden" name="sort" value={filters.sort} />}
-          <div className="grid gap-5 lg:grid-cols-[230px_minmax(0,1fr)]">
-            <aside className="hidden border-r border-gray-200 pr-5 pt-5 lg:block">
-              <FilterGroup title="Prime Delivery"><FilterCheckbox name="prime" value="1" label="Prime eligible" checked={filters.prime === '1'} /></FilterGroup>
-              <FilterGroup title="Delivery Day"><FilterCheckbox name="delivery" value="today" label="Get It Today" checked={filters.delivery === 'today'} /><FilterCheckbox name="delivery" value="tomorrow" label="Get It by Tomorrow" checked={filters.delivery === 'tomorrow'} /></FilterGroup>
-              <FilterGroup title="Free Shipping Eligible"><FilterCheckbox name="shipping" value="free" label="Free Shipping" checked={filters.shipping === 'free'} /></FilterGroup>
-              <FilterGroup title="Department"><div className="space-y-2 pl-1">{categories.map((category) => <FilterCheckbox key={category.slug} type="radio" name="category" value={category.slug} label={category.name} checked={filters.category === category.slug} />)}</div></FilterGroup>
-              <FilterGroup title="Customer Reviews"><FilterCheckbox name="rating" value="4" label={<span className="text-[#f08804]">★★★★☆ <span className="text-[#111]">&amp; Up</span></span>} checked={selectedRatings.includes('4')} /><FilterCheckbox name="rating" value="3" label={<span className="text-[#f08804]">★★★☆☆ <span className="text-[#111]">&amp; Up</span></span>} checked={selectedRatings.includes('3')} /></FilterGroup>
-              {brands.length > 0 && <FilterGroup title="Brands">{brands.map((brand) => <FilterCheckbox key={brand} name="brand" value={brand} label={brand} checked={selectedBrands.includes(brand)} />)}</FilterGroup>}
-              <FilterGroup title="Price">{['Under $20', 'Under $25', '$25 to $50', '$50 to $100', '$100 to $500', '$500 & above'].map((price) => <FilterCheckbox key={price} name="price" value={price} label={price} checked={selectedPrices.includes(price)} />)}</FilterGroup>
-              <FilterGroup title="Deals & Discounts"><FilterCheckbox name="deal" value="1" label="Today\'s Deals" checked={filters.deal === '1'} /></FilterGroup>
+          
+          <div className="grid gap-12 lg:grid-cols-[240px_minmax(0,1fr)] items-start">
+            {/* Filters Sidebar */}
+            <aside className="hidden lg:block space-y-10 sticky top-24">
+              <FilterGroup title="Department">
+                {categories.map((category) => <FilterCheckbox key={category.slug} type="radio" name="category" value={category.slug} label={category.name} checked={filters.category === category.slug} />)}
+              </FilterGroup>
+              
+              <FilterGroup title="Delivery Options">
+                <FilterCheckbox name="prime" value="1" label="Prime Eligible" checked={filters.prime === '1'} />
+                <FilterCheckbox name="delivery" value="today" label="Get It Today" checked={filters.delivery === 'today'} />
+                <FilterCheckbox name="shipping" value="free" label="Free Shipping" checked={filters.shipping === 'free'} />
+              </FilterGroup>
+
+              {brands.length > 0 && (
+                <FilterGroup title="Brands">
+                  {brands.map((brand) => <FilterCheckbox key={brand} name="brand" value={brand} label={brand} checked={selectedBrands.includes(brand)} />)}
+                </FilterGroup>
+              )}
+              
+              <FilterGroup title="Price Range">
+                {['Under $20', 'Under $25', '$25 to $50', '$50 to $100', '$100 to $500', '$500 & above'].map((price) => <FilterCheckbox key={price} name="price" value={price} label={price} checked={selectedPrices.includes(price)} />)}
+              </FilterGroup>
             </aside>
-            <main className="min-w-0"><div className="py-5"><h1 className="text-2xl font-bold text-[#111]">Results</h1>{subtitle && <p className="mt-1 text-sm text-gray-600">{title} · {subtitle}</p>}{filters.query && <Link href="/s" className="mt-1 inline-block text-sm text-[#007185] hover:underline">Clear filters</Link>}</div>{products.length > 0 ? <div className="border-t border-gray-200">{products.map((product) => <ProductCard key={product.id} product={product} layout="list" showAddToCart />)}</div> : <div className="rounded border border-gray-300 p-8 text-center"><h2 className="text-xl font-medium">No products found</h2><p className="mt-2 text-sm text-gray-600">Try another search or browse all products.</p><Link href="/s" className="mt-4 inline-block text-sm text-[#007185] hover:underline">Browse all products</Link></div>}</main>
+
+            {/* Main Product Grid */}
+            <main className="min-w-0">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex gap-4 items-center">
+                  {filters.query && (
+                    <Link href="/s" className="text-xs font-bold uppercase tracking-widest text-black hover:text-graphite border-b border-black pb-0.5 transition-colors">
+                      Clear all filters
+                    </Link>
+                  )}
+                </div>
+                <SortSelect defaultValue={filters.sort || 'featured'} />
+              </div>
+              
+              {products.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 border-t border-l border-black/10">
+                  {products.map((product) => <ProductCard key={product.id} product={product} layout="grid" showAddToCart />)}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-32 px-4 border border-black/10 bg-white shadow-flat mt-8">
+                  <h2 className="font-heading text-2xl font-bold tracking-tight mb-2">No results found</h2>
+                  <p className="text-graphite mb-8 text-center max-w-md">We couldn't find anything matching your current filters. Try adjusting your search or browse all products.</p>
+                  <Link href="/s">
+                    <Button variant="outline" className="border-black text-black rounded-none">Reset Search</Button>
+                  </Link>
+                </div>
+              )}
+            </main>
           </div>
         </form>
       </div>
@@ -50,7 +107,12 @@ export default async function CatalogPage({ title, subtitle, products, filters =
 }
 
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section className="mb-7"><h2 className="mb-3 font-bold">{title}</h2><div className="space-y-2 text-sm">{children}</div></section>;
+  return (
+    <section>
+      <h2 className="text-[10px] font-bold uppercase tracking-widest text-black mb-4 pb-2 border-b border-black/10">{title}</h2>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
 }
 
 function values(value?: string | string[]) {

@@ -2,6 +2,8 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
@@ -34,40 +36,40 @@ export default function SignInForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col space-y-3">
+    <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
       {error && (
-        <div className="text-[#C40000] text-sm border border-[#C40000] p-2 rounded-sm bg-red-50">
-          <span className="font-bold">There was a problem</span>
+        <div className="border border-oxblood bg-oxblood/5 p-4 text-sm font-bold text-oxblood">
           <p>{error}</p>
         </div>
       )}
       <div className="flex flex-col">
-        <label className="text-sm font-bold mb-1">Email</label>
+        <label className="text-[10px] font-bold uppercase tracking-widest text-black mb-2">Email Address</label>
         <input 
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="border border-gray-400 rounded-sm px-3 py-1 outline-none focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)]"
+          className="border border-black/20 px-4 py-3 text-sm font-medium outline-none transition-all rounded-none focus:border-black focus:ring-1 focus:ring-black hover:border-black/50"
         />
       </div>
       <div className="flex flex-col">
-        <label className="text-sm font-bold mb-1">Password</label>
+        <label className="text-[10px] font-bold uppercase tracking-widest text-black mb-2">Password</label>
         <input 
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="border border-gray-400 rounded-sm px-3 py-1 outline-none focus:border-[#e77600] focus:shadow-[0_0_3px_2px_rgba(228,121,17,0.5)]"
+          className="border border-black/20 px-4 py-3 text-sm font-medium outline-none transition-all rounded-none focus:border-black focus:ring-1 focus:ring-black hover:border-black/50"
         />
       </div>
-      <button 
+      <Button 
         type="submit" 
         disabled={loading}
-        className="w-full bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] rounded-md py-1.5 text-sm shadow-sm mt-2 disabled:opacity-50"
+        size="lg"
+        className="mt-4"
       >
-        {loading ? 'Signing in...' : 'Sign in'}
-      </button>
+        {loading ? 'Authenticating...' : 'Sign In'}
+      </Button>
     </form>
   );
 }

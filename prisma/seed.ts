@@ -66,28 +66,33 @@ async function main() {
   const categoryLookup = new Map(createdCategories.map((category) => [category.name, category]))
 
   // Seed Products
-  for (const [index, item] of remote.products.entries()) {
-    const categoryMetaForProduct = categoryMeta[item.category as keyof typeof categoryMeta]
-    const category = categoryLookup.get(categoryMetaForProduct.name)!
-    const product = await prisma.product.create({
-      data: {
-        title: item.title,
-        slug: `dummy-${item.id}-${item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
-        description: item.description,
-        bullets: JSON.stringify(item.tags?.length ? item.tags : ['Quality product', 'Fast delivery available']),
-        brand: item.brand || categoryMetaForProduct.name,
-        price: item.price,
-        listPrice: item.discountPercentage ? Number((item.price / (1 - item.discountPercentage / 100)).toFixed(2)) : null,
-        stock: item.stock,
-        images: JSON.stringify(item.images?.length ? item.images : [item.thumbnail]),
-        categoryId: category.id,
-        ratingAvg: item.rating,
-        ratingCount: Math.max(1, Math.round(item.rating * 1000)),
-        isPrime: index % 2 === 0,
-      }
-    })
-    const review = item.reviews?.[0]
-    if (review) await prisma.review.create({ data: { productId: product.id, userId: demo.id, rating: Math.max(1, Math.min(5, Math.round(review.rating))), title: 'Verified customer review', body: review.comment, createdAt: new Date(review.date) } })
+  for (let iteration = 0; iteration < 3; iteration++) {
+    for (const [index, item] of remote.products.entries()) {
+      const categoryMetaForProduct = categoryMeta[item.category as keyof typeof categoryMeta]
+      const category = categoryLookup.get(categoryMetaForProduct.name)!
+      
+      const title = iteration === 0 ? item.title : `${item.title} - Series ${iteration + 1}`
+      
+      const product = await prisma.product.create({
+        data: {
+          title: title,
+          slug: `dummy-${item.id}-${iteration}-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+          description: item.description,
+          bullets: JSON.stringify(item.tags?.length ? item.tags : ['Quality product', 'Fast delivery available']),
+          brand: item.brand || categoryMetaForProduct.name,
+          price: iteration === 0 ? item.price : Number((item.price * (1 + (iteration * 0.15))).toFixed(2)),
+          listPrice: item.discountPercentage ? Number((item.price / (1 - item.discountPercentage / 100)).toFixed(2)) : null,
+          stock: item.stock,
+          images: JSON.stringify(item.images?.length ? item.images : [item.thumbnail]),
+          categoryId: category.id,
+          ratingAvg: item.rating,
+          ratingCount: Math.max(1, Math.round(item.rating * 1000)),
+          isPrime: (index + iteration) % 2 === 0,
+        }
+      })
+      const review = item.reviews?.[0]
+      if (review && iteration === 0) await prisma.review.create({ data: { productId: product.id, userId: demo.id, rating: Math.max(1, Math.min(5, Math.round(review.rating))), title: 'Verified customer review', body: review.comment, createdAt: new Date(review.date) } })
+    }
   }
 
   console.log('Seeded database successfully!')
