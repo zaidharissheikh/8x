@@ -34,7 +34,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const ratingDistribution = getRatingDistribution(product.ratingAvg);
 
   return (
-    <div className="min-h-screen bg-gallery px-4 pb-12 pt-8 border-t border-black/10">
+    <div className="min-h-screen overflow-x-clip bg-gallery px-4 pb-12 pt-8 border-t border-black/10">
       <HistoryTracker product={{ id: product.id, slug: product.slug, title: product.title, image: images[0] }} />
       <div className="mx-auto max-w-[1600px]">
         {/* Breadcrumb */}
@@ -47,7 +47,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </nav>
 
         {/* Product Grid */}
-        <div className="grid items-start gap-12 lg:gap-16 lg:grid-cols-[minmax(400px,5fr)_minmax(330px,4fr)_320px]">
+        <div className="grid min-w-0 items-start gap-12 lg:gap-16 xl:grid-cols-[minmax(0,5fr)_minmax(0,4fr)_320px]">
           <ProductGallery images={images} title={product.title} />
 
           <ProductConfigurator 
@@ -69,7 +69,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         {related.length > 0 && (
           <section className="mt-24 border-t border-black/10 pt-16">
             <h2 className="font-heading text-3xl font-bold tracking-tight mb-8">Related Items</h2>
-            <div className="custom-scrollbar-hide flex gap-8 overflow-x-auto pb-4">
+            <div className="custom-scrollbar-hide flex min-w-0 gap-8 overflow-x-auto pb-4">
               {related.map((item) => (
                 <ProductCard 
                   key={item.id} 
@@ -95,7 +95,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         {/* Reviews */}
         <section className="mt-24 border-t border-black/10 pt-16">
           <h2 className="font-heading text-3xl font-bold tracking-tight mb-12">Customer Reviews</h2>
-          <div className="grid gap-16 lg:grid-cols-[360px_1fr] items-start">
+          <div className="grid min-w-0 gap-16 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)] items-start">
             <div className="sticky top-24">
               <div className="flex items-end gap-4 mb-4">
                 <span className="font-heading text-6xl font-bold leading-none tracking-tighter">{product.ratingAvg.toFixed(1)}</span>
@@ -108,7 +108,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </div>
               <div className="mt-12 space-y-4">
                 {ratingDistribution.map((rating) => (
-                  <div key={rating.stars} className="grid grid-cols-[48px_1fr_40px] items-center gap-4 text-sm font-bold">
+                  <div key={rating.stars} className="grid grid-cols-[48px_minmax(0,1fr)_40px] items-center gap-4 text-sm font-bold">
                     <span className="text-graphite">{rating.stars} Star</span>
                     <div className="h-1.5 w-full bg-concrete/50 overflow-hidden">
                       <div className="h-full bg-black" style={{ width: `${rating.percent}%` }} />

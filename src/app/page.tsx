@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { prisma } from '@/lib/db';
 import { auth } from '@/lib/auth';
 import { Price, Button, Badge } from '@/components/ui';
-import { FadeReveal, ParallaxImage, ScrubRevealText } from '@/components/home/HomeAnimations';
+import HeroCarousel from '@/components/home/HeroCarousel';
+import { FadeReveal } from '@/components/home/HomeAnimations';
 import RecentlyViewedClient from '@/components/home/RecentlyViewedClient';
 import { ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -32,48 +32,30 @@ export default async function Home() {
 
   const electronics = products.filter((product) => product.category.slug === 'electronics' || product.category.slug === 'computers');
   const beautyProducts = products.filter((product) => product.category.slug === 'beauty-and-personal-care' || product.category.slug === 'beauty' || product.category.slug === 'skin-care' || product.category.slug === 'fragrances');
-  const deals = products.filter((product) => product.listPrice !== null).slice(0, 12);
+  const trendingCategoryOrder = ['electronics', 'computers', 'womens-fashion', 'mens-fashion', 'home-kitchen', 'sports-outdoors'];
+  const trendingProducts = trendingCategoryOrder
+    .map((categorySlug) => products.find((product) => product.category.slug === categorySlug))
+    .filter((product): product is HomeProduct => Boolean(product))
+    .slice(0, 5);
 
   return (
     <div className="flex flex-col">
-      {/* 1. Cinematic Center Hero */}
-      <section className="relative min-h-[85vh] w-full flex items-center justify-center overflow-hidden bg-black text-white">
-        <ParallaxImage 
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop" 
-          alt="Premium Fashion" 
-          className="absolute inset-0 opacity-40 mix-blend-luminosity" 
-        />
-        <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-6xl mx-auto w-full">
-          <Badge variant="outline" className="mb-8 border-white/20 text-white bg-transparent backdrop-blur-md">The Fall Edit</Badge>
-          <ScrubRevealText text="ELEVATE YOUR EVERYDAY." className="font-heading text-[clamp(3rem,8vw,7rem)] font-black leading-[0.9] tracking-tight uppercase" />
-          <FadeReveal delay={0.5} className="mt-12 flex flex-col sm:flex-row gap-4">
-            <Link href="/s?category=womens-fashion">
-              <Button size="lg" className="bg-white text-black hover:bg-concrete border-transparent">
-                Shop Women
-              </Button>
-            </Link>
-            <Link href="/s?category=mens-fashion">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black">
-                Shop Men
-              </Button>
-            </Link>
-          </FadeReveal>
-        </div>
-      </section>
+      {/* 1. Cinematic Category Edit */}
+      <HeroCarousel />
 
       {/* 2. Gapless Bento Grid (Deals & Trending) */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 max-w-[1800px] mx-auto w-full">
         <FadeReveal>
           <div className="flex items-end justify-between mb-12">
             <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tight">Trending Now</h2>
-            <Link href="/s?deal=1" className="hidden md:flex items-center text-sm font-bold uppercase tracking-widest text-graphite hover:text-black transition-colors">
+            <Link href="/s" className="hidden md:flex items-center text-sm font-bold uppercase tracking-widest text-graphite hover:text-black transition-colors">
               View All <ArrowRight size={16} className="ml-2" />
             </Link>
           </div>
         </FadeReveal>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 grid-flow-dense gap-px bg-black/10 border border-black/10">
-          {deals.slice(0, 5).map((product, i) => {
+          {trendingProducts.map((product, i) => {
             const isFeatured = i === 0;
             return (
               <FadeReveal key={product.id} delay={i * 0.1} className={cn(

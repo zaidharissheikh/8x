@@ -34,7 +34,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
   }, { scope: container });
 
   return (
-    <section ref={container} className="flex flex-col-reverse lg:flex-row gap-6">
+    <section ref={container} className="flex min-w-0 flex-col-reverse gap-6 lg:flex-row">
       {/* Thumbnails */}
       <div className="flex lg:flex-col gap-4 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 custom-scrollbar-hide shrink-0">
         {images.map((image, index) => (
@@ -59,7 +59,7 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
       </div>
       
       {/* Main Image */}
-      <div ref={mainImageRef} className="relative aspect-[4/5] w-full bg-concrete/20 overflow-hidden border border-black/5 flex-1 min-h-[500px]">
+      <div ref={mainImageRef} className="relative aspect-[4/5] w-full min-w-0 bg-concrete/20 overflow-hidden border border-black/5 flex-1 min-h-[clamp(360px,125vw,500px)]">
         <img 
           key={selectedImage} // forces re-render/fade on change if we want, but CSS transitions are cleaner
           src={selectedImage} 

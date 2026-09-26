@@ -17,7 +17,7 @@ export default async function Header() {
 
   return (
     <HeaderAnimator>
-      <header className="sticky top-0 z-40 w-full bg-gallery/90 backdrop-blur-md border-b border-black/10">
+      <header className="sticky top-0 z-40 w-full border-b border-black/10 bg-gallery/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-[1800px] items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Left: Branding & Categories */}
           <div className="flex items-center gap-6 lg:gap-12">
@@ -49,7 +49,7 @@ export default async function Header() {
                 type="search" 
                 name="k" 
                 placeholder="Search..." 
-                className="w-full bg-transparent border-b border-black/20 pb-1 text-sm outline-none focus:border-black transition-colors placeholder:text-black/40"
+                className="w-full bg-transparent border-b border-black/20 pb-1 text-sm text-black outline-none focus:border-black transition-colors placeholder:text-black/40"
               />
               <button type="submit" className="absolute right-0 top-0 text-black/40 hover:text-black transition-colors">
                 <Search size={16} />
@@ -75,4 +75,3 @@ export default async function Header() {
     </HeaderAnimator>
   );
 }
-

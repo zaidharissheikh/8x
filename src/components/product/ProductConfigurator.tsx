@@ -62,11 +62,11 @@ export default function ProductConfigurator({ product, variants, title, brand, b
   return (
     <div ref={containerRef} className="contents">
       {/* Center Details */}
-      <section className="lg:col-start-2 lg:row-start-1">
+      <section className="min-w-0 lg:col-start-2 lg:row-start-1">
         <Link href={brandHref} className="config-detail-item text-[10px] font-bold uppercase tracking-widest text-graphite hover:text-black transition-colors mb-4 block">
           {brand}
         </Link>
-        <h1 className="config-detail-item font-heading text-3xl md:text-5xl font-medium leading-[1.1] text-black tracking-tight mb-6">
+        <h1 className="config-detail-item break-words font-heading text-3xl md:text-5xl font-medium leading-[1.1] text-black tracking-tight mb-6">
           {title}
         </h1>
         
@@ -175,8 +175,8 @@ export default function ProductConfigurator({ product, variants, title, brand, b
       </section>
 
       {/* Action Sidebar */}
-      <aside className="lg:col-start-3 lg:row-span-2 lg:row-start-1">
-        <div className="config-sidebar sticky top-24 bg-white border border-black shadow-flat p-6 lg:p-8">
+      <aside className="min-w-0 lg:col-start-3 lg:row-span-2 lg:row-start-1">
+        <div className="config-sidebar sticky top-24 min-w-0 bg-white border border-black shadow-flat p-6 lg:p-8">
           <div className="mb-8">
             <Price amount={selected.price.toFixed(2)} originalAmount={listPrice ? listPrice.toFixed(2) : undefined} className="text-4xl font-heading" />
             <p className="mt-4 text-xs font-bold uppercase tracking-widest text-graphite">FREE delivery <span className="text-black">Tomorrow</span></p>

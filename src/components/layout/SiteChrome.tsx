@@ -3,7 +3,8 @@
 import { usePathname } from 'next/navigation';
 
 export default function SiteChrome({ header, children, footer }: { header: React.ReactNode; children: React.ReactNode; footer: React.ReactNode }) {
-  const isCheckout = usePathname() === '/checkout';
+  const pathname = usePathname();
+  const isCheckout = pathname === '/checkout';
 
   return (
     <>
